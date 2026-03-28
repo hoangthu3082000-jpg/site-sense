@@ -162,12 +162,24 @@ function createMCPServer(): Server {
         name: 'site_sense_capture',
         description:
           "Capture the current browser tab's accessibility tree and screenshot. " +
-          'Returns the page URL, title, a compact DOM tree marking interactive elements, ' +
-          'and a PNG screenshot. First call per session ' +
-          'requires user approval in the browser.',
+          'By default returns a COMPACT view: interactive elements only (buttons, links, inputs, forms) ' +
+          'plus page landmarks, with a low-res JPEG screenshot (~90KB total). ' +
+          'This is usually enough to understand what page the user is on and what actions are available. ' +
+          'If you need more detail (specific text content, non-interactive elements, table data, or ' +
+          'pixel-perfect screenshot), set mode to "full" which returns the complete DOM tree with a ' +
+          'lossless PNG screenshot (~1.4MB total). ' +
+          'Start with compact, escalate to full only if compact lacks the information you need. ' +
+          'First call per session requires user approval in the browser.',
         inputSchema: {
           type: 'object' as const,
-          properties: {},
+          properties: {
+            mode: {
+              type: 'string' as const,
+              enum: ['compact', 'full'],
+              description: 'compact (default): interactive elements + landmarks + JPEG screenshot. full: complete DOM tree + PNG screenshot. Start with compact, escalate to full if needed.',
+              default: 'compact',
+            },
+          },
         },
       },
       {
@@ -252,6 +264,8 @@ function createMCPServer(): Server {
     }
 
     if (name === 'site_sense_capture') {
+      const mode = ((request.params.arguments as { mode?: string })?.mode === 'full' ? 'full' : 'compact') as 'compact' | 'full';
+
       if (!extensionSocket || extensionSocket.destroyed) {
         return {
           content: [
@@ -271,6 +285,7 @@ function createMCPServer(): Server {
         const response = (await sendToExtension({
           type: 'capture_request',
           id: crypto.randomUUID(),
+          mode,
         })) as NativeCaptureResponse;
 
         if (response.status === 'awaiting_approval') {
@@ -308,7 +323,7 @@ function createMCPServer(): Server {
         }
 
         if (response.status === 'captured' && response.data) {
-          const { url: rawUrl, title, accessibilityTree, screenshot, timestamp } =
+          const { url: rawUrl, title, accessibilityTree, screenshot, screenshotMimeType, timestamp } =
             response.data;
 
           // Strip query params from page URL (may contain tokens/session IDs)
@@ -333,7 +348,7 @@ function createMCPServer(): Server {
             content.push({
               type: 'image',
               data: screenshot,
-              mimeType: 'image/png',
+              mimeType: screenshotMimeType || 'image/png',
             });
           }
 

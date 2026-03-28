@@ -32,7 +32,7 @@ let reconnectDelay = RECONNECT_BASE_MS;
 
 let sessionApproved = false;
 let nativePort: chrome.runtime.Port | null = null;
-let pendingCapture: { id: string } | null = null;
+let pendingCapture: { id: string; mode: 'compact' | 'full' } | null = null;
 let allSitesMode = false;
 
 // Capture coordination: Map of request ID → tree (supports concurrent captures)
@@ -57,7 +57,7 @@ function connectNative() {
     reconnectDelay = RECONNECT_BASE_MS;
 
     nativePort.onMessage.addListener((msg: unknown) => {
-      if (isNativeCaptureRequest(msg)) handleCaptureRequest(msg.id);
+      if (isNativeCaptureRequest(msg)) handleCaptureRequest(msg.id, msg.mode || 'compact');
       else if (isNativeStatusRequest(msg)) {
         sendNative({ type: 'status_response', id: msg.id, connected: true, sessionApproved } satisfies NativeStatusResponse);
       }
@@ -134,9 +134,9 @@ async function ensureContentScript(tabId: number): Promise<boolean> {
 
 // ─── Capture ────────────────────────────────────────────────────────
 
-async function handleCaptureRequest(requestId: string) {
+async function handleCaptureRequest(requestId: string, mode: 'compact' | 'full' = 'compact') {
   if (!sessionApproved) {
-    pendingCapture = { id: requestId };
+    pendingCapture = { id: requestId, mode };
     sendNative({ type: 'capture_response', id: requestId, status: 'awaiting_approval' });
     return;
   }
@@ -150,10 +150,10 @@ async function handleCaptureRequest(requestId: string) {
     return;
   }
 
-  await performCapture(requestId);
+  await performCapture(requestId, mode);
 }
 
-async function performCapture(requestId: string) {
+async function performCapture(requestId: string, mode: 'compact' | 'full' = 'compact') {
   captureInFlight = true;
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -193,7 +193,14 @@ async function performCapture(requestId: string) {
     activeRequestId = requestId;
     captureResults.delete(requestId);
 
-    // Inject capture script into page context
+    // Inject capture script — set mode in MAIN world before injection
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (m: string) => { (window as any).__siteSenseCaptureMode = m; },
+      args: [mode],
+      world: 'MAIN' as chrome.scripting.ExecutionWorld,
+    });
+
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       files: ['inject.js'],
@@ -202,11 +209,19 @@ async function performCapture(requestId: string) {
 
     const tree = await waitForTree(requestId, CAPTURE_TIMEOUT_MS);
 
-    // Screenshot (may fail if tab switched during capture)
+    // Screenshot: compact=JPEG quality 50 (~80KB), full=PNG (~1MB)
     let screenshot = '';
+    let screenshotMimeType = 'image/png';
     try {
-      const dataUrl = await chrome.tabs.captureVisibleTab({ format: 'png' });
-      screenshot = dataUrl?.replace(/^data:image\/png;base64,/, '') || '';
+      if (mode === 'full') {
+        const dataUrl = await chrome.tabs.captureVisibleTab({ format: 'png' });
+        screenshot = dataUrl?.replace(/^data:image\/png;base64,/, '') || '';
+        screenshotMimeType = 'image/png';
+      } else {
+        const dataUrl = await chrome.tabs.captureVisibleTab({ format: 'jpeg', quality: 50 });
+        screenshot = dataUrl?.replace(/^data:image\/jpeg;base64,/, '') || '';
+        screenshotMimeType = 'image/jpeg';
+      }
     } catch (err) {
       console.warn(LOG, 'screenshot failed (tab may have changed):', err);
     }
@@ -218,6 +233,7 @@ async function performCapture(requestId: string) {
         title: tab.title || '',
         accessibilityTree: tree ? [tree] : [],
         screenshot,
+        screenshotMimeType,
         timestamp: new Date().toISOString(),
       },
     });
@@ -285,7 +301,7 @@ chrome.runtime.onMessage.addListener((msg: ContentMessage | PopupMessage, sender
         if (pendingCapture) {
           const req = pendingCapture;
           pendingCapture = null;
-          await performCapture(req.id);
+          await performCapture(req.id, req.mode);
         }
       } catch (err) {
         console.error(LOG, 'session_approved handler failed:', err);

@@ -20,6 +20,7 @@ export interface AccessibilityNode {
 export interface NativeCaptureRequest {
   type: 'capture_request';
   id: string;
+  mode?: 'compact' | 'full';
 }
 
 export interface NativeCaptureResponse {
@@ -31,6 +32,7 @@ export interface NativeCaptureResponse {
     title: string;
     accessibilityTree: AccessibilityNode[];
     screenshot: string;
+    screenshotMimeType?: string;
     timestamp: string;
   };
   error?: string;

@@ -10,14 +10,15 @@
 import { CAPTURE_MESSAGE_TYPE, type AccessibilityNode } from '../../shared/types';
 
 // Guard against double-injection
-declare global { interface Window { __siteSenseCaptureInstalled?: boolean } }
+declare global { interface Window { __siteSenseCaptureInstalled?: boolean; __siteSenseCaptureMode?: string } }
 if (!window.__siteSenseCaptureInstalled) {
   window.__siteSenseCaptureInstalled = true;
 }
 
-const MAX_NODES = 4000;
-const MAX_DEPTH = 30;
-const MAX_LABEL = 100;
+const captureMode = (window.__siteSenseCaptureMode || 'compact') as 'compact' | 'full';
+const MAX_NODES = captureMode === 'full' ? 4000 : 500;
+const MAX_DEPTH = captureMode === 'full' ? 30 : 15;
+const MAX_LABEL = captureMode === 'full' ? 100 : 60;
 let nodeCount = 0;
 
 const SKIP_TAGS = new Set([
@@ -113,6 +114,8 @@ function walkDOM(el: Element, depth = 0): AccessibilityNode | null {
   }
 
   if (!isInteractive && !name && children.length === 0) return null;
+  // Compact mode: skip non-interactive, non-landmark nodes (keep only actionable elements)
+  if (captureMode === 'compact' && !isInteractive && !LANDMARK_TAGS.has(el.tagName) && children.length === 0) return null;
   if (!isInteractive && !name && !role && children.length === 1 && !LANDMARK_TAGS.has(el.tagName)) {
     return children[0];
   }
