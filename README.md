@@ -5,6 +5,10 @@
 
 **Give your AI coding CLI eyes into web portals. No cloud. No storage. Read-only.**
 
+<p align="center">
+  <img src="demo.svg" alt="site-sense demo" width="720"/>
+</p>
+
 You're in a conversation with your AI assistant. It says *"go to the Azure Portal and check the NSG rules."* You alt-tab, navigate, screenshot, describe what you see, paste it back. You are the human middleware.
 
 **site-sense eliminates this.** The AI calls an MCP tool → your browser extension captures the active tab → the AI sees what you see.

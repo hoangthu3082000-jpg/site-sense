@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420">
+  <style>
+    @keyframes blink { 50% { opacity: 0 } }
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    .bg { fill: #1e1e2e; }
+    .titlebar { fill: #313244; }
+    .dot { r: 6; }
+    .red { fill: #f38ba8; }
+    .yellow { fill: #f9e2af; }
+    .green { fill: #a6e3a1; }
+    .title { fill: #cdd6f4; font-family: sans-serif; font-size: 12px; text-anchor: middle; }
+    .prompt { fill: #89b4fa; font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: 13px; }
+    .cmd { fill: #cdd6f4; font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: 13px; }
+    .out { fill: #a6adc8; font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: 13px; }
+    .warn { fill: #f9e2af; }
+    .fade { opacity: 0; animation: fadein 0.3s ease forwards; }
+    @keyframes fadein { to { opacity: 1 } }
+  </style>
+
+  <!-- Background -->
+  <rect class="bg" width="720" height="420" rx="10"/>
+
+  <!-- Title bar -->
+  <rect class="titlebar" width="720" height="32" rx="10"/>
+  <rect class="titlebar" y="10" width="720" height="22"/>
+  <circle class="dot red" cx="18" cy="16"/>
+  <circle class="dot yellow" cx="38" cy="16"/>
+  <circle class="dot green" cx="58" cy="16"/>
+  <text class="title" x="360" y="20">site-sense demo</text>
+
+  <!-- Terminal content -->
+  <g class="fade" style="animation-delay:0ms">
+    <text class="prompt" x="16" y="50">$ </text>
+    <text class="cmd" x="32" y="50">What's on my browser tab?</text>
+  </g>
+  <text class="out fade" style="animation-delay:2000ms" x="16" y="86">⏳ Calling site_sense_capture...</text>
+  <text class="out fade" style="animation-delay:3500ms" x="16" y="122">I can see the Azure Portal deployment page.</text>
+  <text class="out fade" style="animation-delay:4200ms" x="16" y="158">📋 Page: portal.azure.com — Resource Group Overview</text>
+  <text class="out fade" style="animation-delay:4400ms" x="16" y="176">📊 Status: 3 deployments (2 succeeded, 1 in progress)</text>
+  <text class="out fade" style="animation-delay:4800ms" x="16" y="212">Interactive elements found:</text>
+  <text class="out fade" style="animation-delay:5000ms" x="16" y="230">  • [link] Home &gt; Resource Groups &gt; my-rg</text>
+  <text class="out fade" style="animation-delay:5200ms" x="16" y="248">  • [button] "Create" — creates a new resource</text>
+  <text class="out warn fade" style="animation-delay:5400ms" x="16" y="266">  • [button] "Delete resource group" ⚠</text>
+  <text class="out fade" style="animation-delay:5600ms" x="16" y="284">  • [link] Deployments (3)</text>
+  <text class="out fade" style="animation-delay:5800ms" x="16" y="302">  • [input] Search resources...</text>
+  <text class="out fade" style="animation-delay:6200ms" x="16" y="338">📸 Screenshot captured.</text>
+</svg>
