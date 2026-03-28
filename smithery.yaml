@@ -1,0 +1,19 @@
+# Smithery MCP server configuration
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      browser:
+        type: string
+        title: Browser
+        description: Target browser (chrome or edge)
+        default: edge
+        enum: [chrome, edge]
+  commandFunction: |
+    (config) => ({
+      command: 'node',
+      args: ['./dist/bridge/src/index.js']
+    })
+exampleConfig:
+  browser: edge
