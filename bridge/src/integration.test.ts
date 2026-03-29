@@ -10,8 +10,12 @@ import {
 } from './native-messaging.js';
 
 const SOCKET_DIR = path.join(os.tmpdir(), 'site-sense');
-const SOCKET_PATH = path.join(SOCKET_DIR, 'bridge.sock');
-const INFO_PATH = path.join(SOCKET_DIR, 'bridge.json');
+
+function findTestSocket(): string {
+  const files = fs.readdirSync(SOCKET_DIR).filter(f => /^bridge-\d+\.sock$/.test(f));
+  if (files.length === 0) throw new Error('No socket found');
+  return path.join(SOCKET_DIR, files[files.length - 1]);
+}
 
 /**
  * Integration test: validates MCP server ↔ native host ↔ simulated extension.
@@ -52,9 +56,6 @@ describe('MCP Server integration', () => {
   }
 
   beforeAll(async () => {
-    // Clean up stale socket
-    try { fs.unlinkSync(SOCKET_PATH); } catch { /* ok */ }
-
     // Start MCP server
     const serverPath = path.resolve(
       import.meta.dirname,
@@ -65,17 +66,17 @@ describe('MCP Server integration', () => {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
-    // Wait for socket to appear
+    // Wait for a bridge-*.sock to appear
     await new Promise<void>((resolve, reject) => {
       const maxWait = 5000;
       const start = Date.now();
       const check = () => {
-        if (fs.existsSync(SOCKET_PATH)) {
+        try {
+          findTestSocket(); // throws if none found
           resolve();
-        } else if (Date.now() - start > maxWait) {
-          reject(new Error('Socket never appeared'));
-        } else {
-          setTimeout(check, 100);
+        } catch {
+          if (Date.now() - start > maxWait) reject(new Error('Socket never appeared'));
+          else setTimeout(check, 100);
         }
       };
       check();
@@ -145,7 +146,7 @@ describe('MCP Server integration', () => {
 
   it('relays capture via Unix socket to simulated extension', async () => {
     // Connect a mock extension to the socket
-    const socket = net.createConnection(SOCKET_PATH);
+    const socket = net.createConnection(findTestSocket());
     const reader = createNativeMessageReader();
 
     await new Promise<void>((resolve) => socket.on('connect', resolve));
@@ -223,7 +224,7 @@ describe('MCP Server integration', () => {
   });
 
   it('reports connected after extension connects', async () => {
-    const socket = net.createConnection(SOCKET_PATH);
+    const socket = net.createConnection(findTestSocket());
     const reader = createNativeMessageReader();
 
     await new Promise<void>((resolve) => socket.on('connect', resolve));

@@ -20,23 +20,33 @@ import {
 } from './native-messaging.js';
 
 const SOCKET_DIR = path.join(os.tmpdir(), 'site-sense');
-const INFO_PATH = path.join(SOCKET_DIR, 'bridge.json');
 
-function getSocketPath(): string {
+// Scan directory for bridge-*.sock files, sorted newest first (by mtime)
+function findSockets(): string[] {
   try {
-    const info = JSON.parse(fs.readFileSync(INFO_PATH, 'utf-8'));
-    return info.socketPath;
+    return fs.readdirSync(SOCKET_DIR)
+      .filter(f => /^bridge-\d+\.sock$/.test(f))
+      .map(f => ({ path: path.join(SOCKET_DIR, f), mtime: fs.statSync(path.join(SOCKET_DIR, f)).mtimeMs }))
+      .sort((a, b) => b.mtime - a.mtime)
+      .map(f => f.path);
   } catch {
-    // Fallback to default
-    return path.join(SOCKET_DIR, 'bridge.sock');
+    return [];
   }
 }
 
 function main() {
-  const socketPath = getSocketPath();
+  const sockets = findSockets();
+  if (sockets.length === 0) {
+    const errorMsg = encodeNativeMessage({
+      type: 'error',
+      error: 'No MCP server running. Start a CLI session first.',
+    });
+    process.stdout.write(errorMsg);
+    process.exit(1);
+  }
 
-  // Connect to MCP server's Unix domain socket
-  const socket = net.createConnection(socketPath);
+  // Try the most recent socket
+  const socket = net.createConnection(sockets[0]);
 
   // Extension → MCP server: read native messaging from stdin, forward to socket
   const stdinReader = createNativeMessageReader();
